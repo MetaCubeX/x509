@@ -100,10 +100,10 @@ func marshalPublicKey(pub any) (publicKeyBytes []byte, publicKeyAlgorithm pkix.A
 		if !ok {
 			return nil, pkix.AlgorithmIdentifier{}, errors.New("x509: unsupported elliptic curve")
 		}
-		publicKeyBytes, err = pub.Bytes()
-		if err != nil {
-			return nil, pkix.AlgorithmIdentifier{}, err
+		if !pub.Curve.IsOnCurve(pub.X, pub.Y) {
+			return nil, pkix.AlgorithmIdentifier{}, errors.New("x509: invalid elliptic curve public key")
 		}
+		publicKeyBytes = elliptic.Marshal(pub.Curve, pub.X, pub.Y)
 		publicKeyAlgorithm.Algorithm = oidPublicKeyECDSA
 		var paramBytes []byte
 		paramBytes, err = asn1.Marshal(oid)
