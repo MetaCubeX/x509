@@ -13,7 +13,6 @@ import (
 	"crypto/ed25519"
 	"crypto/elliptic"
 	"crypto/fips140"
-	"crypto/internal/cryptotest"
 	"crypto/mldsa"
 	"crypto/rand"
 	"crypto/rsa"
@@ -4575,8 +4574,6 @@ func TestEKUOIDS(t *testing.T) {
 }
 
 func TestMLDSA(t *testing.T) {
-	cryptotest.MustMinimumFIPS140ModuleVersion(t, "v1.26.0")
-
 	t.Run("ML-DSA-44", func(t *testing.T) {
 		testMLDSA(t, rfc9881ExamplePrivateKeyMLDSA44,
 			rfc9881ExamplePublicKeyMLDSA44, rfc9881ExampleCertificateMLDSA44)
