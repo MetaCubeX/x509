@@ -21,7 +21,7 @@ import (
 	"net"
 	"os"
 	"runtime"
-	"slices"
+	"sort"
 	"strings"
 	"testing"
 	"time"
@@ -575,9 +575,9 @@ func generatePEMCertWithRepeatSAN(currentTime int64, count int, san string) stri
 		NotAfter:  time.Unix(currentTime, 0),
 	}
 	if ip := net.ParseIP(san); ip != nil {
-		cert.IPAddresses = slices.Repeat([]net.IP{ip}, count)
+		cert.IPAddresses = slicesRepeat([]net.IP{ip}, count)
 	} else {
-		cert.DNSNames = slices.Repeat([]string{san}, count)
+		cert.DNSNames = slicesRepeat([]string{san}, count)
 	}
 	privKey, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
@@ -1801,7 +1801,7 @@ func chainsToStrings(chains [][]*Certificate) []string {
 		}
 		chainStrings = append(chainStrings, strings.Join(names, " -> "))
 	}
-	slices.Sort(chainStrings)
+	sort.Strings(chainStrings)
 	return chainStrings
 }
 
@@ -2332,7 +2332,7 @@ func TestPathBuilding(t *testing.T) {
 				return
 			}
 			gotChains := chainsToStrings(chains)
-			if !slices.Equal(gotChains, tc.expectedChains) {
+			if !slicesEqual(gotChains, tc.expectedChains) {
 				t.Errorf("unexpected chains returned:\ngot:\n\t%s\nwant:\n\t%s", strings.Join(gotChains, "\n\t"), strings.Join(tc.expectedChains, "\n\t"))
 			}
 		})

@@ -31,7 +31,6 @@ import (
 	"net/url"
 	"reflect"
 	"runtime"
-	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -860,27 +859,27 @@ func TestCreateSelfSignedCertificate(t *testing.T) {
 			t.Errorf("%s: SignatureAlgorithm wasn't copied from template. Got %v, want %v", test.name, cert.SignatureAlgorithm, test.sigAlgo)
 		}
 
-		if !slices.Equal(cert.ExtKeyUsage, testExtKeyUsage) {
+		if !slicesEqual(cert.ExtKeyUsage, testExtKeyUsage) {
 			t.Errorf("%s: extkeyusage wasn't correctly copied from the template. Got %v, want %v", test.name, cert.ExtKeyUsage, testExtKeyUsage)
 		}
 
-		if !slices.EqualFunc(cert.UnknownExtKeyUsage, testUnknownExtKeyUsage, asn1.ObjectIdentifier.Equal) {
+		if !slicesEqualFunc(cert.UnknownExtKeyUsage, testUnknownExtKeyUsage, asn1.ObjectIdentifier.Equal) {
 			t.Errorf("%s: unknown extkeyusage wasn't correctly copied from the template. Got %v, want %v", test.name, cert.UnknownExtKeyUsage, testUnknownExtKeyUsage)
 		}
 
-		if !slices.Equal(cert.OCSPServer, template.OCSPServer) {
+		if !slicesEqual(cert.OCSPServer, template.OCSPServer) {
 			t.Errorf("%s: OCSP servers differ from template. Got %v, want %v", test.name, cert.OCSPServer, template.OCSPServer)
 		}
 
-		if !slices.Equal(cert.IssuingCertificateURL, template.IssuingCertificateURL) {
+		if !slicesEqual(cert.IssuingCertificateURL, template.IssuingCertificateURL) {
 			t.Errorf("%s: Issuing certificate URLs differ from template. Got %v, want %v", test.name, cert.IssuingCertificateURL, template.IssuingCertificateURL)
 		}
 
-		if !slices.Equal(cert.DNSNames, template.DNSNames) {
+		if !slicesEqual(cert.DNSNames, template.DNSNames) {
 			t.Errorf("%s: SAN DNS names differ from template. Got %v, want %v", test.name, cert.DNSNames, template.DNSNames)
 		}
 
-		if !slices.Equal(cert.EmailAddresses, template.EmailAddresses) {
+		if !slicesEqual(cert.EmailAddresses, template.EmailAddresses) {
 			t.Errorf("%s: SAN emails differ from template. Got %v, want %v", test.name, cert.EmailAddresses, template.EmailAddresses)
 		}
 
@@ -888,11 +887,11 @@ func TestCreateSelfSignedCertificate(t *testing.T) {
 			t.Errorf("%s: URIs differ from template. Got %v, want %v", test.name, cert.URIs, template.URIs)
 		}
 
-		if !slices.EqualFunc(cert.IPAddresses, template.IPAddresses, net.IP.Equal) {
+		if !slicesEqualFunc(cert.IPAddresses, template.IPAddresses, net.IP.Equal) {
 			t.Errorf("%s: SAN IPs differ from template. Got %v, want %v", test.name, cert.IPAddresses, template.IPAddresses)
 		}
 
-		if !slices.Equal(cert.CRLDistributionPoints, template.CRLDistributionPoints) {
+		if !slicesEqual(cert.CRLDistributionPoints, template.CRLDistributionPoints) {
 			t.Errorf("%s: CRL distribution points differ from template. Got %v, want %v", test.name, cert.CRLDistributionPoints, template.CRLDistributionPoints)
 		}
 
@@ -2537,7 +2536,7 @@ func TestMultipleURLsInCRLDP(t *testing.T) {
 		"http://epscd.catcert.net/crl/ec-acc.crl",
 		"http://epscd2.catcert.net/crl/ec-acc.crl",
 	}
-	if got := cert.CRLDistributionPoints; !slices.Equal(got, want) {
+	if got := cert.CRLDistributionPoints; !slicesEqual(got, want) {
 		t.Errorf("CRL distribution points = %#v, want #%v", got, want)
 	}
 }
@@ -3530,10 +3529,10 @@ func TestCertificateRequestRoundtripFields(t *testing.T) {
 	}
 	out := marshalAndParseCSR(t, in)
 
-	if !slices.Equal(in.DNSNames, out.DNSNames) {
+	if !slicesEqual(in.DNSNames, out.DNSNames) {
 		t.Fatalf("Unexpected DNSNames: got %v, want %v", out.DNSNames, in.DNSNames)
 	}
-	if !slices.Equal(in.EmailAddresses, out.EmailAddresses) {
+	if !slicesEqual(in.EmailAddresses, out.EmailAddresses) {
 		t.Fatalf("Unexpected EmailAddresses: got %v, want %v", out.EmailAddresses, in.EmailAddresses)
 	}
 	if len(in.IPAddresses) != len(out.IPAddresses) ||
@@ -4307,7 +4306,7 @@ func TestCertificatePolicies(t *testing.T) {
 		t.Fatalf("ParseCertificate() unexpected error: %v", err)
 	}
 
-	if !slices.EqualFunc(cert.Policies, expectPolicies, OID.Equal) {
+	if !slicesEqualFunc(cert.Policies, expectPolicies, OID.Equal) {
 		t.Errorf("cert.Policies = %v, want: %v", cert.Policies, expectPolicies)
 	}
 
@@ -4324,7 +4323,7 @@ func TestCertificatePolicies(t *testing.T) {
 		t.Fatalf("ParseCertificate() unexpected error: %v", err)
 	}
 
-	if !slices.EqualFunc(cert.Policies, expectPolicies, OID.Equal) {
+	if !slicesEqualFunc(cert.Policies, expectPolicies, OID.Equal) {
 		t.Errorf("cert.Policies = %v, want: %v", cert.Policies, expectPolicies)
 	}
 }

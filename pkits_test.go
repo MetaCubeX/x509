@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
-	"slices"
 	"testing"
 )
 
@@ -155,7 +154,7 @@ func TestNISTPKITSPolicy(t *testing.T) {
 				}
 				chain = append(chain, cert)
 			}
-			slices.Reverse(chain)
+			slicesReverse(chain)
 
 			var initialPolicies []OID
 			for _, pstr := range tc.InitialPolicySet {

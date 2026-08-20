@@ -10,7 +10,6 @@ import (
 	"net"
 	"net/netip"
 	"net/url"
-	"slices"
 	"strings"
 )
 
@@ -76,7 +75,7 @@ func (nc *nameConstraintsSet[T, V]) sortAndPrune(cmp func(T, T) int, subset func
 		return
 	}
 
-	slices.SortFunc(nc.set, cmp)
+	slicesSortFunc(nc.set, cmp)
 
 	if len(nc.set) < 2 {
 		return
@@ -101,7 +100,7 @@ func (nc *nameConstraintsSet[T, V]) search(s V, cmp func(T, V) int, match func(T
 		return lowerBound, false
 	}
 	// Look for the lower bound of s in the set.
-	i, found := slices.BinarySearchFunc(nc.set, s, cmp)
+	i, found := slicesBinarySearchFunc(nc.set, s, cmp)
 	// If we found an exact match, return it
 	if found {
 		return nc.set[i], true
@@ -342,7 +341,7 @@ func newDNSConstraints(l []string, permitted bool) interface{ query(string) (str
 			return &dnsConstraints{all: true}
 		}
 	}
-	constraints := slices.Clone(l)
+	constraints := slicesClone(l)
 
 	nc := &dnsConstraints{
 		constraints: &nameConstraintsSet[string, string]{

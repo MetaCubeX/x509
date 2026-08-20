@@ -13,7 +13,6 @@ import (
 	"net"
 	"net/netip"
 	"runtime"
-	"slices"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -623,7 +622,7 @@ func (c *Certificate) Verify(opts VerifyOptions) ([][]*Certificate, error) {
 	var invalidPoliciesChains int
 	var incompatibleKeyUsageChains int
 	var constraintsHintErr error
-	candidateChains = slices.DeleteFunc(candidateChains, func(chain []*Certificate) bool {
+	candidateChains = slicesDeleteFunc(candidateChains, func(chain []*Certificate) bool {
 		if !policiesValid(chain, opts) {
 			invalidPoliciesChains++
 			return true
