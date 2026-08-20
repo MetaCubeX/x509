@@ -10,7 +10,6 @@ import (
 	"crypto/x509/pkix"
 	"errors"
 	"fmt"
-	"maps"
 	"net"
 	"net/netip"
 	"runtime"
@@ -1381,7 +1380,10 @@ func policiesValid(chain []*Certificate, opts VerifyOptions) bool {
 		authorityConstrainedPolicySet[string(n.validPolicy.der)] = true
 	}
 	// 6.1.5 (g) (5) -- as updated by RFC 9618
-	userConstrainedPolicySet := maps.Clone(authorityConstrainedPolicySet)
+	userConstrainedPolicySet := map[string]bool{}
+	for k, v := range authorityConstrainedPolicySet {
+		userConstrainedPolicySet[k] = v
+	}
 	// 6.1.5 (g) (6) -- as updated by RFC 9618
 	if len(initialUserPolicySet) != 1 || !initialUserPolicySet[string(anyPolicyOID.der)] {
 		// 6.1.5 (g) (6) (i) -- as updated by RFC 9618
