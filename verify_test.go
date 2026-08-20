@@ -1523,6 +1523,18 @@ func TestValidHostname(t *testing.T) {
 	}
 }
 
+func randText() string {
+	const base32alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
+
+	// ⌈log₃₂ 2¹²⁸⌉ = 26 chars
+	src := make([]byte, 26)
+	rand.Read(src)
+	for i := range src {
+		src[i] = base32alphabet[src[i]%32]
+	}
+	return string(src)
+}
+
 func generateCert(cn string, isCA bool, issuer *Certificate, issuerKey crypto.PrivateKey, priv crypto.PrivateKey) (*Certificate, crypto.PrivateKey, error) {
 	if priv == nil {
 		var err error
@@ -1540,7 +1552,7 @@ func generateCert(cn string, isCA bool, issuer *Certificate, issuerKey crypto.Pr
 		Subject:      pkix.Name{CommonName: cn},
 		NotBefore:    time.Now().Add(-1 * time.Hour),
 		NotAfter:     time.Now().Add(24 * time.Hour),
-		DNSNames:     []string{rand.Text()},
+		DNSNames:     []string{randText()},
 
 		KeyUsage:              KeyUsageKeyEncipherment | KeyUsageDigitalSignature | KeyUsageCertSign,
 		ExtKeyUsage:           []ExtKeyUsage{ExtKeyUsageServerAuth},
