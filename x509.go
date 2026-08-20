@@ -28,7 +28,6 @@ import (
 	"crypto/ed25519"
 	"crypto/elliptic"
 	"crypto/fips140"
-	"crypto/mldsa"
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/x509/pkix"
@@ -50,6 +49,7 @@ import (
 	_ "crypto/sha256"
 	_ "crypto/sha512"
 
+	"github.com/metacubex/mldsa"
 	"golang.org/x/crypto/cryptobyte"
 	cryptobyte_asn1 "golang.org/x/crypto/cryptobyte/asn1"
 )

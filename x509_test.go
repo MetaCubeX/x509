@@ -13,7 +13,6 @@ import (
 	"crypto/ed25519"
 	"crypto/elliptic"
 	"crypto/fips140"
-	"crypto/mldsa"
 	"crypto/rand"
 	"crypto/rsa"
 	_ "crypto/sha256"
@@ -37,6 +36,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/metacubex/mldsa"
 )
 
 func TestParsePKCS1PrivateKey(t *testing.T) {

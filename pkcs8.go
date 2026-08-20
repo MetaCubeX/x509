@@ -8,12 +8,13 @@ import (
 	"crypto/ecdh"
 	"crypto/ecdsa"
 	"crypto/ed25519"
-	"crypto/mldsa"
 	"crypto/rsa"
 	"crypto/x509/pkix"
 	"encoding/asn1"
 	"errors"
 	"fmt"
+
+	"github.com/metacubex/mldsa"
 )
 
 // pkcs8 reflects an ASN.1, PKCS #8 PrivateKey. See

@@ -8,11 +8,12 @@ import (
 	"crypto/dsa"
 	"crypto/ecdsa"
 	"crypto/ed25519"
-	"crypto/mldsa"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+
+	"github.com/metacubex/mldsa"
 )
 
 func ExampleCertificate_Verify() {
