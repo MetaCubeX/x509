@@ -2438,7 +2438,7 @@ func TestEmptySerialNumber(t *testing.T) {
 		DNSNames: []string{"example.com"},
 	}
 
-	for range 100 {
+	for i := 0; i < 100; i++ {
 		derBytes, err := CreateCertificate(rand.Reader, &template, &template, &testPrivateKey.PublicKey, testPrivateKey)
 		if err != nil {
 			t.Fatalf("failed to create certificate: %s", err)

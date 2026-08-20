@@ -330,20 +330,6 @@ func TestOIDUnmarshalBinary(t *testing.T) {
 	}
 }
 
-func BenchmarkOIDMarshalUnmarshalText(b *testing.B) {
-	oid := mustNewOIDFromInts([]uint64{1, 2, 3, 9999, 1024})
-	for range b.N {
-		text, err := oid.MarshalText()
-		if err != nil {
-			b.Fatal(err)
-		}
-		var o OID
-		if err := o.UnmarshalText(text); err != nil {
-			b.Fatal(err)
-		}
-	}
-}
-
 func TestOIDFromASN1OID(t *testing.T) {
 	negativeComponentOID := asn1.ObjectIdentifier{-1}
 	_, err := OIDFromASN1OID(negativeComponentOID)

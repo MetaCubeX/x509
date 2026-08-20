@@ -1,6 +1,6 @@
 module github.com/metacubex/x509
 
-go 1.27
+go 1.20
 
 require (
 	github.com/metacubex/mldsa v0.1.1

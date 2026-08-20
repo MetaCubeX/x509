@@ -1609,7 +1609,7 @@ func TestPathologicalChains(t *testing.T) {
 
 			var leafSigner crypto.PrivateKey
 			var intermediate *Certificate
-			for i := range 100 {
+			for i := 0; i < 100; i++ {
 				cn := "Intermediate CA"
 				if !test.sameSubject {
 					cn += fmt.Sprintf(" #%d", i)
