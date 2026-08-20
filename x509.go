@@ -27,7 +27,6 @@ import (
 	"crypto/ecdsa"
 	"crypto/ed25519"
 	"crypto/elliptic"
-	"crypto/fips140"
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/x509/pkix"
@@ -546,10 +545,6 @@ func getPublicKeyAlgorithmFromOID(oid asn1.ObjectIdentifier) PublicKeyAlgorithm 
 	case oid.Equal(oidPublicKeyMLDSA44),
 		oid.Equal(oidPublicKeyMLDSA65),
 		oid.Equal(oidPublicKeyMLDSA87):
-		// ML-DSA is not available in FIPS 140-3 module v1.0.0.
-		if fips140.Version() == "v1.0.0" {
-			return UnknownPublicKeyAlgorithm
-		}
 		return MLDSA
 	}
 	return UnknownPublicKeyAlgorithm
