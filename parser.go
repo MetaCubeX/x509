@@ -16,7 +16,6 @@ import (
 	"encoding/asn1"
 	"errors"
 	"fmt"
-	"internal/godebug"
 	"math"
 	"math/big"
 	"net"
@@ -959,8 +958,6 @@ func processExtensions(out *Certificate) error {
 	return nil
 }
 
-var x509negativeserial = godebug.New("x509negativeserial")
-
 func parseCertificate(der []byte) (*Certificate, error) {
 	cert := &Certificate{}
 
@@ -1003,13 +1000,6 @@ func parseCertificate(der []byte) (*Certificate, error) {
 	serial := new(big.Int)
 	if !tbs.ReadASN1Integer(serial) {
 		return nil, errors.New("x509: malformed serial number")
-	}
-	if serial.Sign() == -1 {
-		if x509negativeserial.Value() != "1" {
-			return nil, errors.New("x509: negative serial number")
-		} else {
-			x509negativeserial.IncNonDefault()
-		}
 	}
 	cert.SerialNumber = serial
 

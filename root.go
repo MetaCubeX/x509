@@ -5,7 +5,6 @@
 package x509
 
 import (
-	"internal/godebug"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -60,14 +59,8 @@ func initSystemRoots() {
 		return
 	}
 
-	if useFallbackRoots && systemCertsAvail {
-		x509usefallbackroots.IncNonDefault() // overriding system certs with fallback certs.
-	}
-
 	systemRoots, systemRootsErr = fallbackRoots, nil
 }
-
-var x509usefallbackroots = godebug.New("x509usefallbackroots")
 
 // SetFallbackRoots sets the roots to use during certificate verification, if no
 // custom roots are specified and a platform verifier or a system certificate
@@ -101,22 +94,11 @@ func SetFallbackRoots(roots *CertPool) {
 	// is going to be called at program startup.
 	if systemRoots == nil && systemRootsErr == nil {
 		systemRoots = roots
-		useFallbackRoots = x509usefallbackroots.Value() == "1"
+		useFallbackRoots = true
 		return
 	}
 
 	once.Do(func() { panic("unreachable") }) // asserts that system roots were indeed loaded before.
-
-	forceFallbackRoots := x509usefallbackroots.Value() == "1"
-	systemCertsAvail := systemRoots != nil && (systemRoots.len() > 0 || systemRoots.systemPool)
-
-	if !forceFallbackRoots && systemCertsAvail {
-		return
-	}
-
-	if forceFallbackRoots && systemCertsAvail {
-		x509usefallbackroots.IncNonDefault() // overriding system certs with fallback certs.
-	}
 
 	systemRoots, systemRootsErr = roots, nil
 }
@@ -132,17 +114,11 @@ const (
 	certDirEnv = "SSL_CERT_DIR"
 )
 
-var x509sslcertoverrideplatform = godebug.New("x509sslcertoverrideplatform")
-
 func loadSystemRoots() (*CertPool, error) {
 	certFilePath, certDirPath := os.Getenv(certFileEnv), os.Getenv(certDirEnv)
 
 	if runtime.GOOS == "windows" || runtime.GOOS == "darwin" || runtime.GOOS == "ios" {
 		if certFilePath == "" && certDirPath == "" {
-			return &CertPool{systemPool: true}, nil
-		}
-		if x509sslcertoverrideplatform.Value() == "0" {
-			x509sslcertoverrideplatform.IncNonDefault()
 			return &CertPool{systemPool: true}, nil
 		}
 	}

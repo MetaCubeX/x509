@@ -4372,10 +4372,6 @@ func TestCertificateOIDPoliciesGODEBUG(t *testing.T) {
 }
 
 func TestCertificatePolicies(t *testing.T) {
-	if x509usepolicies.Value() == "0" {
-		t.Skip("test relies on default x509usepolicies GODEBUG")
-	}
-
 	template := Certificate{
 		SerialNumber:      big.NewInt(1),
 		Subject:           pkix.Name{CommonName: "Cert"},

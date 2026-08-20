@@ -30,14 +30,12 @@ import (
 	"crypto/fips140"
 	"crypto/mldsa"
 	"crypto/rsa"
-	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/x509/pkix"
 	"encoding/asn1"
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"internal/godebug"
 	"io"
 	"math/big"
 	"net"
@@ -1293,8 +1291,6 @@ func isIA5String(s string) error {
 	return nil
 }
 
-var x509usepolicies = godebug.New("x509usepolicies")
-
 func buildCertExtensions(template *Certificate, subjectIsEmpty bool, authorityKeyId []byte, subjectKeyId []byte) (ret []pkix.Extension, err error) {
 	ret = make([]pkix.Extension, 10 /* maximum number of elements. */)
 	n := 0
@@ -1380,7 +1376,7 @@ func buildCertExtensions(template *Certificate, subjectIsEmpty bool, authorityKe
 		n++
 	}
 
-	usePolicies := x509usepolicies.Value() != "0"
+	usePolicies := true
 	if ((!usePolicies && len(template.PolicyIdentifiers) > 0) || (usePolicies && len(template.Policies) > 0)) &&
 		!oidInExtensions(oidExtensionCertificatePolicies, template.ExtraExtensions) {
 		ret[n], err = marshalCertificatePolicies(template.Policies, template.PolicyIdentifiers)
@@ -1582,25 +1578,16 @@ func marshalCertificatePolicies(policies []OID, policyIdentifiers []asn1.ObjectI
 
 	b := cryptobyte.NewBuilder(make([]byte, 0, 128))
 	b.AddASN1(cryptobyte_asn1.SEQUENCE, func(child *cryptobyte.Builder) {
-		if x509usepolicies.Value() != "0" {
-			x509usepolicies.IncNonDefault()
-			for _, v := range policies {
-				child.AddASN1(cryptobyte_asn1.SEQUENCE, func(child *cryptobyte.Builder) {
-					child.AddASN1(cryptobyte_asn1.OBJECT_IDENTIFIER, func(child *cryptobyte.Builder) {
-						if len(v.der) == 0 {
-							child.SetError(errors.New("invalid policy object identifier"))
-							return
-						}
-						child.AddBytes(v.der)
-					})
+		for _, v := range policies {
+			child.AddASN1(cryptobyte_asn1.SEQUENCE, func(child *cryptobyte.Builder) {
+				child.AddASN1(cryptobyte_asn1.OBJECT_IDENTIFIER, func(child *cryptobyte.Builder) {
+					if len(v.der) == 0 {
+						child.SetError(errors.New("invalid policy object identifier"))
+						return
+					}
+					child.AddBytes(v.der)
 				})
-			}
-		} else {
-			for _, v := range policyIdentifiers {
-				child.AddASN1(cryptobyte_asn1.SEQUENCE, func(child *cryptobyte.Builder) {
-					child.AddASN1ObjectIdentifier(v)
-				})
-			}
+			})
 		}
 	})
 
@@ -1874,22 +1861,12 @@ func CreateCertificate(rand io.Reader, template, parent *Certificate, pub, priv 
 
 	subjectKeyId := template.SubjectKeyId
 	if len(subjectKeyId) == 0 && template.IsCA {
-		if x509sha256skid.Value() == "0" {
-			x509sha256skid.IncNonDefault()
-			// SubjectKeyId generated using method 1 in RFC 5280, Section 4.2.1.2:
-			//   (1) The keyIdentifier is composed of the 160-bit SHA-1 hash of the
-			//   value of the BIT STRING subjectPublicKey (excluding the tag,
-			//   length, and number of unused bits).
-			h := sha1.Sum(publicKeyBytes)
-			subjectKeyId = h[:]
-		} else {
-			// SubjectKeyId generated using method 1 in RFC 7093, Section 2:
-			//    1) The keyIdentifier is composed of the leftmost 160-bits of the
-			//    SHA-256 hash of the value of the BIT STRING subjectPublicKey
-			//    (excluding the tag, length, and number of unused bits).
-			h := sha256.Sum256(publicKeyBytes)
-			subjectKeyId = h[:20]
-		}
+		// SubjectKeyId generated using method 1 in RFC 7093, Section 2:
+		//    1) The keyIdentifier is composed of the leftmost 160-bits of the
+		//    SHA-256 hash of the value of the BIT STRING subjectPublicKey
+		//    (excluding the tag, length, and number of unused bits).
+		h := sha256.Sum256(publicKeyBytes)
+		subjectKeyId = h[:20]
 	}
 
 	// Check that the signer's public key matches the private key, if available.
@@ -1936,8 +1913,6 @@ func CreateCertificate(rand io.Reader, template, parent *Certificate, pub, priv 
 		SignatureValue:     asn1.BitString{Bytes: signature, BitLength: len(signature) * 8},
 	})
 }
-
-var x509sha256skid = godebug.New("x509sha256skid")
 
 // pemCRLPrefix is the magic string that indicates that we have a PEM encoded
 // CRL.
