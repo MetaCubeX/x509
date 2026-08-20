@@ -1702,7 +1702,7 @@ func signTBS(tbs []byte, key crypto.Signer, sigAlg SignatureAlgorithm, rand io.R
 		}
 	}
 
-	signature, err := crypto.SignMessage(key, rand, tbs, signerOpts)
+	signature, err := cryptoSignMessage(key, rand, tbs, signerOpts)
 	if err != nil {
 		return nil, err
 	}
