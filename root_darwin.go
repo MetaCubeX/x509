@@ -5,9 +5,10 @@
 package x509
 
 import (
-	"crypto/x509/internal/macos"
 	"errors"
 	"fmt"
+
+	"github.com/metacubex/x509/internal/macos"
 )
 
 // macOS has no default SSL_CERT_{FILE,DIR} paths.
