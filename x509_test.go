@@ -12,7 +12,6 @@ import (
 	"crypto/ecdsa"
 	"crypto/ed25519"
 	"crypto/elliptic"
-	"crypto/fips140"
 	"crypto/rand"
 	"crypto/rsa"
 	_ "crypto/sha256"
@@ -700,13 +699,11 @@ func TestCreateSelfSignedCertificate(t *testing.T) {
 		{"Ed25519", ed25519Pub, ed25519Priv, true, PureEd25519},
 	}
 
-	if fips140.Version() != "v1.0.0" {
-		mldsaPriv, err := mldsa.GenerateKey(mldsa.MLDSA44())
-		if err != nil {
-			t.Fatalf("Failed to generate ML-DSA-44 key: %s", err)
-		}
-		tests = append(tests, test{"ML-DSA-44", mldsaPriv.PublicKey(), mldsaPriv, true, MLDSA44})
+	mldsaPriv, err := mldsa.GenerateKey(mldsa.MLDSA44())
+	if err != nil {
+		t.Fatalf("Failed to generate ML-DSA-44 key: %s", err)
 	}
+	tests = append(tests, test{"ML-DSA-44", mldsaPriv.PublicKey(), mldsaPriv, true, MLDSA44})
 
 	testExtKeyUsage := []ExtKeyUsage{ExtKeyUsageClientAuth, ExtKeyUsageServerAuth}
 	testUnknownExtKeyUsage := []asn1.ObjectIdentifier{[]int{1, 2, 3}, []int{2, 59, 1}}
@@ -1497,13 +1494,11 @@ func TestCreateCertificateRequest(t *testing.T) {
 		{"Ed25519", ed25519Priv, PureEd25519},
 	}
 
-	if fips140.Version() != "v1.0.0" {
-		mldsaPriv, err := mldsa.GenerateKey(mldsa.MLDSA44())
-		if err != nil {
-			t.Fatalf("Failed to generate ML-DSA-44 key: %s", err)
-		}
-		tests = append(tests, test{"ML-DSA-44", mldsaPriv, MLDSA44})
+	mldsaPriv, err := mldsa.GenerateKey(mldsa.MLDSA44())
+	if err != nil {
+		t.Fatalf("Failed to generate ML-DSA-44 key: %s", err)
 	}
+	tests = append(tests, test{"ML-DSA-44", mldsaPriv, MLDSA44})
 
 	for _, test := range tests {
 		template := CertificateRequest{
@@ -2921,34 +2916,32 @@ func TestCreateRevocationList(t *testing.T) {
 		},
 	}
 
-	if fips140.Version() != "v1.0.0" {
-		mldsaPriv, err := mldsa.GenerateKey(mldsa.MLDSA44())
-		if err != nil {
-			t.Fatalf("Failed to generate ML-DSA-44 key: %s", err)
-		}
-		tests = append(tests, test{
-			name: "valid, ML-DSA-44 key",
-			key:  mldsaPriv,
-			issuer: &Certificate{
-				KeyUsage: KeyUsageCRLSign,
-				Subject: pkix.Name{
-					CommonName: "testing",
-				},
-				SubjectKeyId: []byte{1, 2, 3},
-			},
-			template: &RevocationList{
-				RevokedCertificateEntries: []RevocationListEntry{
-					{
-						SerialNumber:   big.NewInt(2),
-						RevocationTime: time.Time{}.Add(time.Hour),
-					},
-				},
-				Number:     big.NewInt(5),
-				ThisUpdate: time.Time{}.Add(time.Hour * 24),
-				NextUpdate: time.Time{}.Add(time.Hour * 48),
-			},
-		})
+	mldsaPriv, err := mldsa.GenerateKey(mldsa.MLDSA44())
+	if err != nil {
+		t.Fatalf("Failed to generate ML-DSA-44 key: %s", err)
 	}
+	tests = append(tests, test{
+		name: "valid, ML-DSA-44 key",
+		key:  mldsaPriv,
+		issuer: &Certificate{
+			KeyUsage: KeyUsageCRLSign,
+			Subject: pkix.Name{
+				CommonName: "testing",
+			},
+			SubjectKeyId: []byte{1, 2, 3},
+		},
+		template: &RevocationList{
+			RevokedCertificateEntries: []RevocationListEntry{
+				{
+					SerialNumber:   big.NewInt(2),
+					RevocationTime: time.Time{}.Add(time.Hour),
+				},
+			},
+			Number:     big.NewInt(5),
+			ThisUpdate: time.Time{}.Add(time.Hour * 24),
+			NextUpdate: time.Time{}.Add(time.Hour * 48),
+		},
+	})
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -3326,18 +3319,16 @@ func TestMismatchedTemplateSignatureAlgorithm(t *testing.T) {
 	}
 
 	var mldsa44Priv, mldsa87Priv crypto.Signer
-	if fips140.Version() != "v1.0.0" {
-		k, err := mldsa.GenerateKey(mldsa.MLDSA44())
-		if err != nil {
-			t.Fatalf("Failed to generate ML-DSA-44 key: %s", err)
-		}
-		mldsa44Priv = k
-		k, err = mldsa.GenerateKey(mldsa.MLDSA87())
-		if err != nil {
-			t.Fatalf("Failed to generate ML-DSA-87 key: %s", err)
-		}
-		mldsa87Priv = k
+	k, err := mldsa.GenerateKey(mldsa.MLDSA44())
+	if err != nil {
+		t.Fatalf("Failed to generate ML-DSA-44 key: %s", err)
 	}
+	mldsa44Priv = k
+	k, err = mldsa.GenerateKey(mldsa.MLDSA87())
+	if err != nil {
+		t.Fatalf("Failed to generate ML-DSA-87 key: %s", err)
+	}
+	mldsa87Priv = k
 
 	const mismatchErr = "x509: requested SignatureAlgorithm does not match private key type"
 	const mldsaParamsErr = "x509: requested SignatureAlgorithm does not match ML-DSA parameters"
