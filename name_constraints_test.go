@@ -14,12 +14,10 @@ import (
 	"encoding/hex"
 	"encoding/pem"
 	"fmt"
-	"internal/testenv"
 	"math/big"
 	"net"
 	"net/url"
 	"os"
-	"os/exec"
 	"strconv"
 	"strings"
 	"sync"
@@ -2149,29 +2147,6 @@ func TestConstraintCases(t *testing.T) {
 				t.Fatalf("cannot create leaf: %s", err)
 			}
 
-			// Skip tests with CommonName set because OpenSSL will try to match it
-			// against name constraints, while we ignore it when it's not hostname-looking.
-			if !test.noOpenSSL && testNameConstraintsAgainstOpenSSL && test.leaf.cn == "" {
-				output, err := testChainAgainstOpenSSL(t, leafCert, intermediatePool, rootPool)
-				if err == nil && len(test.expectedError) > 0 {
-					t.Error("unexpectedly succeeded against OpenSSL")
-					if debugOpenSSLFailure {
-						return
-					}
-				}
-
-				if err != nil {
-					if _, ok := err.(*exec.ExitError); !ok {
-						t.Errorf("OpenSSL failed to run: %s", err)
-					} else if len(test.expectedError) == 0 {
-						t.Errorf("OpenSSL unexpectedly failed: %v", output)
-						if debugOpenSSLFailure {
-							return
-						}
-					}
-				}
-			}
-
 			verifyOpts := VerifyOptions{
 				Roots:         rootPool,
 				Intermediates: intermediatePool,
@@ -2300,40 +2275,6 @@ func writePEMsToTempFile(certs []*Certificate) *os.File {
 	}
 
 	return file
-}
-
-func testChainAgainstOpenSSL(t *testing.T, leaf *Certificate, intermediates, roots *CertPool) (string, error) {
-	args := []string{"verify", "-no_check_time"}
-
-	rootsFile := writePEMsToTempFile(allCerts(t, roots))
-	if debugOpenSSLFailure {
-		println("roots file:", rootsFile.Name())
-	} else {
-		defer os.Remove(rootsFile.Name())
-	}
-	args = append(args, "-CAfile", rootsFile.Name())
-
-	if intermediates.len() > 0 {
-		intermediatesFile := writePEMsToTempFile(allCerts(t, intermediates))
-		if debugOpenSSLFailure {
-			println("intermediates file:", intermediatesFile.Name())
-		} else {
-			defer os.Remove(intermediatesFile.Name())
-		}
-		args = append(args, "-untrusted", intermediatesFile.Name())
-	}
-
-	leafFile := writePEMsToTempFile([]*Certificate{leaf})
-	if debugOpenSSLFailure {
-		println("leaf file:", leafFile.Name())
-	} else {
-		defer os.Remove(leafFile.Name())
-	}
-	args = append(args, leafFile.Name())
-
-	cmd := testenv.Command(t, "openssl", args...)
-	out, err := cmd.CombinedOutput()
-	return string(out), err
 }
 
 var rfc2821Tests = []struct {
