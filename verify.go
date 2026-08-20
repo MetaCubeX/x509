@@ -10,7 +10,6 @@ import (
 	"crypto/x509/pkix"
 	"errors"
 	"fmt"
-	"iter"
 	"maps"
 	"net"
 	"net/netip"
@@ -1111,11 +1110,11 @@ func (pg *policyGraph) parentWithAnyPolicy() *policyGraphNode {
 	return pg.strata[pg.depth-1][string(anyPolicyOID.der)]
 }
 
-func (pg *policyGraph) parents() iter.Seq[*policyGraphNode] {
+func (pg *policyGraph) parents() map[string]*policyGraphNode {
 	if pg.depth == 0 {
 		return nil
 	}
-	return maps.Values(pg.strata[pg.depth-1])
+	return pg.strata[pg.depth-1]
 }
 
 func (pg *policyGraph) leaves() map[string]*policyGraphNode {
@@ -1274,7 +1273,7 @@ func policiesValid(chain []*Certificate, opts VerifyOptions) bool {
 			if policies[string(anyPolicyOID.der)] && (inhibitAnyPolicy > 0 || (n-i < n && isSelfSigned)) {
 				missing := map[string][]*policyGraphNode{}
 				leaves := pg.leaves()
-				for p := range pg.parents() {
+				for _, p := range pg.parents() {
 					for _, expected := range p.expectedPolicySet {
 						if leaves[string(expected.der)] == nil {
 							missing[string(expected.der)] = append(missing[string(expected.der)], p)
