@@ -1,0 +1,64 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: "Go"
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os:
+          - 'ubuntu-latest' # amd64 linux
+          - 'windows-latest' # amd64 windows
+          - 'macos-latest' # arm64 macos
+          - 'ubuntu-24.04-arm' # arm64 linux
+          - 'windows-11-arm' # arm64 windows
+          - 'macos-26-intel' # amd64 macos
+        go-version:
+          - '1.27'
+          - '1.26'
+          - '1.25'
+          - '1.24'
+          - '1.23'
+          - '1.22'
+          - '1.21'
+          - '1.20'
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      CGO_ENABLED: 0
+      GOTOOLCHAIN: local
+      # Fix mingw trying to be smart and converting paths https://github.com/moby/moby/issues/24029#issuecomment-250412919
+      MSYS_NO_PATHCONV: true
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v7
+        with:
+          go-version: ${{ matrix.go-version }}
+      - run: go version
+      - name: Trust platform test root on macOS
+        if: runner.os == 'macOS'
+        timeout-minutes: 2
+        run: |
+          sudo -n security add-trusted-cert \
+            -d \
+            -r trustRoot \
+            -p ssl \
+            -k /Library/Keychains/System.keychain \
+            platform_root_cert.pem
+      - name: Trust platform test root on Windows
+        if: runner.os == 'Windows'
+        shell: cmd
+        timeout-minutes: 2
+        run: certutil.exe -addstore -f Root platform_root_cert.pem
+      - name: Build
+        run: go build -v ./...
+      - name: Test
+        run: go test -v ./...
